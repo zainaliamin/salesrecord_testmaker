@@ -1,0 +1,16 @@
+Options -Indexes
+DirectoryIndex index.php
+RewriteEngine On
+
+# Serve real files/folders as-is
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# "" (just /salesrecord/) -> index.php (r defaults to 'home' in your router)
+RewriteRule ^$ index.php [QSA,L]
+
+# Everything else -> index.php?r=...
+RewriteRule ^(.+)$ index.php?r=$1 [QSA,L]
+
+

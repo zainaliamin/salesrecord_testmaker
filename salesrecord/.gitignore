@@ -1,0 +1,9 @@
+# Logs
+storage/
+storage/php_errors.log
+
+# Uploads
+public/proofs/
+
+# Local helpers
+hash.php

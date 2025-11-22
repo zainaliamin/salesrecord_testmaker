@@ -1,0 +1,69 @@
+body{font-family:Arial,Helvetica,sans-serif;background:#f6f7fb;margin:0}
+.wrap{max-width:-webkit-fill-available;margin:0 auto;padding:16px 20px}
+.top{background:#fff;border-bottom:1px solid #e5e7eb}
+label{display:block;margin:8px 0 4px}
+input,select,textarea{width:-webkit-fill-available;padding:10px;border:1px solid #d1d5db;border-radius:8px}
+button{padding:10px 14px;border:0;background:#111827;color:#fff;border-radius:8px;margin-top:12px;cursor:pointer}
+table{width:100%;border-collapse:collapse;background:#fff}
+th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;vertical-align:top}
+.badge{padding:4px 8px;border-radius:999px;font-size:12px;text-transform:capitalize}
+.badge.pending{background:#fde68a}
+.badge.approved{background:#bbf7d0}
+.badge.rejected{background:#fecaca}
+.card{background:#fff;border:1px solid #eee;border-radius:12px;padding:16px}
+a{color:#2563eb;text-decoration:none}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:720px){.grid{grid-template-columns:1fr}}
+.help{font-size:12px;color:#6b7280}
+h2.month-upper {
+    padding: 5px 24px;
+    border-radius: 12px;
+    background: #00ffd0;
+    text-transform: uppercase;
+    color: white;
+    margin: 0 150px 0 0;
+    font-weight: 800;
+}
+
+
+
+
+
+
+
+
+/* Don't clip the zoom (safe for your cards) */
+.card{ overflow: visible; }
+
+/* Thumbnail by default */
+img[alt="Receipt"]{
+  display:block;
+  width:150px !important;         /* small by default */
+  max-width:none !important;      /* override inline max-width */
+  height:auto;
+  border:1px solid #eaeaea !important;
+  border-radius:10px !important;
+  background:#fff;
+  cursor:zoom-in;
+
+  position:relative; z-index:1;
+  transform-origin: top left;     /* grows out to the right/down */
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+/* Zoom on hover */
+img[alt="Receipt"]:hover{
+  transform:scale(2.25);
+  box-shadow:0 14px 40px rgba(0,0,0,.18);
+  z-index:999;                    /* float above neighbors */
+}
+
+/* Slightly smaller zoom on very small screens */
+@media (max-width:480px){
+  img[alt="Receipt"]:hover{ transform:scale(1.7); }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce){
+  img[alt="Receipt"]{ transition:none; }
+}
