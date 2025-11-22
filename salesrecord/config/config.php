@@ -21,7 +21,7 @@
 return [
   'db' => [
     // CHANGE dbname, user, pass for your local phpMyAdmin
-    'dsn'  => 'mysql:host=127.0.0.1;dbname=edums_salesrecord_db;charset=utf8mb4',
+    'dsn'  => 'mysql:host=127.0.0.1;dbname=your-db-name;charset=utf8mb4',
     'user' => 'dbuser',
     'pass' => 'password',
   ],
