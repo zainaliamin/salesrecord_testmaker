@@ -224,7 +224,7 @@ if (!$status) {
     // If approved and there was upfront payment, log it in ledger (with receipt)
     if ($upd->rowCount() > 0) {
       $st = $pdo->prepare("
-        SELECT school_name, phone, amount_paid, payment_method, agent_user_id, customer_type, receipt_image_path
+        SELECT school_name, phone, amount_paid, payment_method, agent_user_id, customer_type, receipt_image_path, created_at
         FROM sales
         WHERE id=? LIMIT 1
       ");
@@ -242,12 +242,13 @@ if (!$status) {
 
         // Carry over the sale receipt (if any) into the ledger row
         $receiptPath = $s['receipt_image_path'] ?: null;
+        $paidAt      = $s['created_at'] ?? date('Y-m-d H:i:s');
 
         $ins = $pdo->prepare("
           INSERT INTO sale_payments
             (sale_id, school_name, phone, amount, method, source, agent_user_id, receipt_path, paid_at, created_at)
           VALUES
-            (?,       ?,           ?,     ?,      ?,      ?,      ?,            ?,            NOW(),  NOW())
+            (?,       ?,           ?,     ?,      ?,      ?,      ?,            ?,            ?,      NOW())
         ");
         $ins->execute([
           $id,
@@ -257,7 +258,8 @@ if (!$status) {
           $method,
           $src,
           (int)$s['agent_user_id'],
-          $receiptPath
+          $receiptPath,
+          $paidAt
         ]);
       }
     }
@@ -437,6 +439,7 @@ if (!$status) {
       $method = 'cash';
     }
     $source = ($fields['customer_type'] === 'old') ? 'renewal' : 'new';
+    $paidAt = $current['created_at'] ?? date('Y-m-d H:i:s');
 
     // Helper: find existing initial ledger row
     $selInit = $pdo->prepare("
@@ -454,7 +457,7 @@ if (!$status) {
           // UPDATE existing initial row to match current edit
           $up = $pdo->prepare("
             UPDATE sale_payments
-            SET school_name = ?, phone = ?, amount = ?, method = ?, source = ?, agent_user_id = ?, paid_at = NOW()
+            SET school_name = ?, phone = ?, amount = ?, method = ?, source = ?, agent_user_id = ?, paid_at = ?
             WHERE id = ?
           ");
           $up->execute([
@@ -464,6 +467,7 @@ if (!$status) {
             $method,
             $source,
             (int)$current['agent_user_id'], // agent doesn't change here
+            $paidAt,
             (int)$initial['id']
           ]);
         } else {
@@ -472,7 +476,7 @@ if (!$status) {
             INSERT INTO sale_payments
               (sale_id, school_name, phone, amount, method, source, agent_user_id, paid_at, created_at)
             VALUES
-              (?,       ?,           ?,     ?,      ?,      ?,      ?,            NOW(),  NOW())
+              (?,       ?,           ?,     ?,      ?,      ?,      ?,            ?,     NOW())
           ");
           $ins->execute([
             $id,
@@ -481,7 +485,8 @@ if (!$status) {
             $amt,
             $method,
             $source,
-            (int)$current['agent_user_id']
+            (int)$current['agent_user_id'],
+            $paidAt
           ]);
         }
       } else {
@@ -594,6 +599,8 @@ if (!$status) {
       $nextDate = null;
     }
 
+    $paidAt = $dp['created_at'] ?? date('Y-m-d H:i:s');
+
     // Update sale balances
     $pdo->prepare("
       UPDATE sales
@@ -608,7 +615,7 @@ if (!$status) {
       INSERT INTO sale_payments
         (sale_id, school_name, phone, amount, method, source, agent_user_id, paid_at, created_at, receipt_path)
       VALUES
-        (?, ?, ?, ?, ?, 'due', ?, NOW(), NOW(), NULL)
+        (?, ?, ?, ?, ?, 'due', ?, ?, NOW(), NULL)
     ");
     $ins->execute([
       (int)$dp['sale_id'],
@@ -616,7 +623,8 @@ if (!$status) {
       $dp['phone'] ?? '',
       $amount,
       $dp['method'],
-      (int)$dp['agent_user_id']
+      (int)$dp['agent_user_id'],
+      $paidAt
     ]);
     $paymentId = (int)$pdo->lastInsertId();
 
