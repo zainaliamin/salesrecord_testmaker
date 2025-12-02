@@ -214,6 +214,19 @@ foreach ($sales as $row) {
 <br>
 <div class="card" style="margin-top:12px">
   <h3 style="margin-top:0;">Due Payment Requests</h3>
+  <?php
+    // Totals for approved due payments
+    $dpPayable = $dpPaid = $dpRemaining = 0;
+    foreach ($duePayments as $dpTmp) {
+      if (($dpTmp['status'] ?? '') !== 'approved') continue;
+      $paidTmp = (int)($dpTmp['amount'] ?? 0);
+      $payableSnapTmp   = isset($dpTmp['payable_at_request']) ? (int)$dpTmp['payable_at_request'] : (int)($dpTmp['current_amount_due'] ?? 0);
+      $remainingSnapTmp = isset($dpTmp['remaining_at_request']) ? (int)$dpTmp['remaining_at_request'] : max($payableSnapTmp - $paidTmp, 0);
+      $dpPayable   += $payableSnapTmp;
+      $dpPaid      += $paidTmp;
+      $dpRemaining += $remainingSnapTmp;
+    }
+  ?>
   <table id="adminDuePayments">
     <thead>
       <tr>
@@ -290,6 +303,15 @@ foreach ($sales as $row) {
         </tr>
       <?php endforeach; ?>
     </tbody>
+    <tfoot>
+      <tr>
+        <th colspan="4" style="text-align:right">Totals (Approved):</th>
+        <th><?= number_format($dpPayable) ?></th>
+        <th><?= number_format($dpPaid) ?></th>
+        <th><?= number_format($dpRemaining) ?></th>
+        <th colspan="5"></th>
+      </tr>
+    </tfoot>
   </table>
 </div>
 <?php endif; ?>
