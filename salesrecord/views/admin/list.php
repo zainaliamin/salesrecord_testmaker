@@ -4,6 +4,10 @@
 <?php if (isset($kpis)): ?>
 <div class="card" style="margin:8px 0 12px 0; display:flex; gap:12px; flex-wrap:wrap;">
   <div style="flex:1; min-width:200px;">
+    <div style="font-size:14px; opacity:0.7;">Total Payable (Approved Sales)</div>
+    <div style="font-size:22px; font-weight:700;"><?= number_format((int)($kpis['payable'] ?? 0)) ?></div>
+  </div>
+  <div style="flex:1; min-width:200px;">
     <div style="font-size:14px; opacity:0.7;">Gross Received (Payments)</div>
     <div style="font-size:22px; font-weight:700;"><?= number_format((int)$kpis['gross']) ?></div>
   </div>

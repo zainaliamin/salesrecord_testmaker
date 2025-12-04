@@ -56,6 +56,16 @@ class AdminController {
     $duePayments = $stDue->fetchAll();
 
   // --- KPI calculations — all bound to window
+  // Payable (approved) within window
+  $st = $pdo->prepare("
+    SELECT COALESCE(SUM(amount_to_be_paid),0)
+    FROM sales
+    WHERE created_at >= ? AND created_at < ?
+      AND status = 'approved'
+  ");
+  $st->execute([$wStart, $wEnd]);
+  $payableTotal = (int)$st->fetchColumn();
+
   // Gross from ledger (sale_payments.paid_at)
   $st = $pdo->prepare("
     SELECT COALESCE(SUM(amount),0)
@@ -87,6 +97,7 @@ class AdminController {
   $netAfterCommissions = $income - $commissions;
 
   $kpis = [
+    'payable'         => $payableTotal,
     'gross'           => $income,
     'commissions'     => $commissions,
     'net_after_comm'  => $netAfterCommissions,
@@ -684,3 +695,4 @@ if (!$status) {
     redirect('admin/sales');
   }
 }
+
