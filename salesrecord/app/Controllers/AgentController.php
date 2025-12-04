@@ -5,10 +5,14 @@ public function dashboard(){
   require_role('agent');
   global $pdo;
 
-  // Use helper window; already loaded from init.php
-  [$from, $to] = month_window(); // 'Y-m-01' and 'first day of next month'
+  // Build window from query (?date_from=YYYY-MM-DD&date_to=YYYY-MM-DD), default = this month
+  [$dateFrom, $dateTo] = window_from_query();
+  $windowLabel = window_label($dateFrom, $dateTo);
+  // Half-open range with explicit times
+  $wStart = $dateFrom.' 00:00:00';
+  $wEnd   = $dateTo.' 00:00:00';
 
-  // Sales for this month
+  // Sales for this window
   $sql = "SELECT *
           FROM sales
           WHERE agent_user_id = ?
@@ -16,7 +20,7 @@ public function dashboard(){
             AND created_at <  ?
           ORDER BY id DESC";
   $st = $pdo->prepare($sql);
-  $st->execute([ user()['id'], $from, $to ]);
+  $st->execute([ user()['id'], $wStart, $wEnd ]);
   $sales = $st->fetchAll();
 
   // Fetch latest rejection notes for rejected sales
@@ -46,13 +50,15 @@ public function dashboard(){
     FROM sale_due_payments dp
     LEFT JOIN sales s ON s.id = dp.sale_id
     WHERE dp.agent_user_id = ?
+      AND dp.created_at >= ?
+      AND dp.created_at <  ?
     ORDER BY dp.id DESC
     LIMIT 25
   ");
-  $stPend->execute([ user()['id'] ]);
+  $stPend->execute([ user()['id'], $wStart, $wEnd ]);
   $myDuePayments = $stPend->fetchAll();
 
-  // Money I received this month (from payments ledger)
+  // Money I received in this window (from payments ledger)
   $st2 = $pdo->prepare("
     SELECT COALESCE(SUM(amount),0)
     FROM sale_payments
@@ -60,10 +66,10 @@ public function dashboard(){
       AND paid_at >= ?
       AND paid_at <  ?
   ");
-  $st2->execute([ user()['id'], $from, $to ]);
-  $myIncomeThisMonth = (int)$st2->fetchColumn();
+  $st2->execute([ user()['id'], $wStart, $wEnd ]);
+  $myIncomeInRange = (int)$st2->fetchColumn();
 
-  // My commissions on approved sales created this month
+  // My commissions on approved sales created in this window
   $st3 = $pdo->prepare("
     SELECT COALESCE(SUM(commission_amount),0)
     FROM sales
@@ -72,8 +78,14 @@ public function dashboard(){
       AND created_at >= ?
       AND created_at <  ?
   ");
-  $st3->execute([ user()['id'], $from, $to ]);
-  $myCommissionThisMonth = (int)$st3->fetchColumn();
+  $st3->execute([ user()['id'], $wStart, $wEnd ]);
+  $myCommissionInRange = (int)$st3->fetchColumn();
+
+  $window = [
+    'from'  => $dateFrom,
+    'to'    => $dateTo,
+    'label' => $windowLabel,
+  ];
 
   require __DIR__.'/../../views/agent/dashboard.php';
 }

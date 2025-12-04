@@ -213,7 +213,7 @@ foreach ($sales as $row) {
 <?php if (!empty($duePayments)): ?>
 <br>
 <div class="card" style="margin-top:12px">
-  <h3 style="margin-top:0;">Due Payment Requests</h3>
+  <h3 style="margin-top:0;">Pending Payments Recieved</h3>
   <?php
     // Totals for approved due payments
     $dpPayable = $dpPaid = $dpRemaining = 0;

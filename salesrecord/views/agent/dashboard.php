@@ -2,10 +2,35 @@
 $title='My Submissions';
 $rejectionNotes = $rejectionNotes ?? [];
 $myDuePayments  = $myDuePayments  ?? [];
+$window = $window ?? [
+  'from'  => date('Y-m-01'),
+  'to'    => date('Y-m-01', strtotime('first day of next month')),
+  'label' => 'This Month',
+];
+$windowFrom = $window['from'] ?? date('Y-m-01');
+$windowTo   = $window['to']   ?? date('Y-m-01', strtotime('first day of next month'));
+$windowLabel = $window['label'] ?? 'This Month';
+$myIncomeInRange = $myIncomeInRange ?? ($myIncomeThisMonth ?? 0);
+$myCommissionInRange = $myCommissionInRange ?? ($myCommissionThisMonth ?? 0);
+$allTimeTo = date('Y-m-d', strtotime('+1 day'));
 ob_start();
 ?>
 <h2>My Submissions</h2>
 <p><a href="<?= base_url('agent/sales/create') ?>">+ Add New Submission</a></p>
+<form method="get" action="<?= htmlspecialchars(base_url('agent/dashboard')) ?>" style="margin:8px 0 12px 0; display:flex; flex-wrap:wrap; gap:8px; align-items:flex-end;">
+  <label style="display:flex; flex-direction:column; font-weight:600;">From
+    <input type="date" name="date_from" value="<?= htmlspecialchars($windowFrom) ?>">
+  </label>
+  <label style="display:flex; flex-direction:column; font-weight:600;">Before Start of (Is Date se Phle tk)
+    <input type="date" name="date_to" value="<?= htmlspecialchars($windowTo) ?>">
+  </label>
+  <div style="display:flex; gap:8px; align-items:center;">
+    <button type="submit">Apply</button>
+    <a href="<?= htmlspecialchars(base_url('agent/dashboard')) ?>">Reset</a>
+    <a href="<?= htmlspecialchars(base_url('agent/dashboard?date_from=2000-01-01&date_to='.urlencode($allTimeTo))) ?>">All time</a>
+  </div>
+</form>
+<p class="help" style="margin-top:-4px;">Showing entries created between <b><?= htmlspecialchars($windowLabel) ?> </b>(records where created_at is within the chosen dates).</p>
 
 <?php
 // Totals should include ONLY approved entries (rows shown below include all statuses)
@@ -24,10 +49,10 @@ foreach ($sales as $row) {
 
 <div class="card" style="padding:8px;margin:8px 0; display:flex; gap:12px; flex-wrap:wrap;">
   <div style="flex:1; min-width:220px;">
-    <strong>My Received (this month):</strong> <?= number_format($myIncomeThisMonth ?? 0) ?>
+    <strong>My Received (<?= htmlspecialchars($windowLabel) ?>):</strong> <?= number_format($myIncomeInRange ?? 0) ?>
   </div>
   <div style="flex:1; min-width:220px;">
-    <strong>My Commission (this month):</strong> <?= number_format($myCommissionThisMonth ?? 0) ?>
+    <strong>My Commission (<?= htmlspecialchars($windowLabel) ?>):</strong> <?= number_format($myCommissionInRange ?? 0) ?>
   </div>
 </div>
 
@@ -226,7 +251,7 @@ foreach ($sales as $row) {
 <script>
 (function(){
   const modal = document.getElementById('noteModal');
-  const bodyEl = document.getElementById('noteModalBody');
+  const bodyEl = document.getElementById('noteModalBody');e
   const closeBtn = document.getElementById('noteModalClose');
   if (!modal || !bodyEl || !closeBtn) return;
 
