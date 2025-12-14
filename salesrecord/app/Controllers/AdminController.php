@@ -180,6 +180,7 @@ if (!$status) {
 
     FROM users u
     WHERE u.role = 'agent'
+    HAVING (commission_sum > 0 OR sale_count > 0)
     ORDER BY commission_sum DESC, sale_count DESC, u.name ASC
   ");
   // IMPORTANT: bind the actual window vars from this method
