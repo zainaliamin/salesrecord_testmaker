@@ -251,7 +251,7 @@ foreach ($sales as $row) {
 <script>
 (function(){
   const modal = document.getElementById('noteModal');
-  const bodyEl = document.getElementById('noteModalBody');e
+  const bodyEl = document.getElementById('noteModalBody');
   const closeBtn = document.getElementById('noteModalClose');
   if (!modal || !bodyEl || !closeBtn) return;
 

@@ -5,6 +5,10 @@ class Auth {
     $st->execute([$email]);
     $u = $st->fetch();
     if ($u) {
+      // Block login for inactive users (default to active when column missing)
+      if (($u['status'] ?? 'active') !== 'active') {
+        return false;
+      }
       $stored = (string)($u['password'] ?? '');
       // Plain-text only comparison (UAT-only)
       if (hash_equals($stored, $password)) {

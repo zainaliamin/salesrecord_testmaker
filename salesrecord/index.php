@@ -62,6 +62,8 @@ $router->post('admin/expenses/delete',[AdminExpenseController::class,'delete']);
 $router->get('admin/users',          [AdminUserController::class,'index']);
 $router->get('admin/users/create',   [AdminUserController::class,'create']);
 $router->post('admin/users/store',   [AdminUserController::class,'store']);
+$router->get('admin/users/status',   [AdminUserController::class,'updateStatus']); // fallback if POST not routed
+$router->post('admin/users/status',  [AdminUserController::class,'updateStatus']);
 $router->get('admin/password',       [AdminUserController::class,'passwordForm']);
 $router->post('admin/password',      [AdminUserController::class,'passwordUpdate']);
 

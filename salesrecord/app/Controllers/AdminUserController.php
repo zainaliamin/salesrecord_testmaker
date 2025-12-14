@@ -2,7 +2,7 @@
 class AdminUserController {
   public function index(){
     require_role('admin'); global $pdo;
-    $users = $pdo->query("SELECT id,name,email,password,role,created_at FROM users ORDER BY role ASC, id ASC")->fetchAll();
+    $users = $pdo->query("SELECT id,name,email,password,role,status,created_at FROM users ORDER BY role ASC, id ASC")->fetchAll();
     require __DIR__.'/../../views/admin/users/index.php';
   }
 
@@ -32,7 +32,7 @@ class AdminUserController {
     // UAT ONLY: store plain text in the 'password' column
     $plain = $pass1;
 
-    $st = $pdo->prepare("INSERT INTO users(name,email,password,role,created_at) VALUES(?,?,?,'agent',NOW())");
+    $st = $pdo->prepare("INSERT INTO users(name,email,password,role,status,created_at) VALUES(?,?,?,'agent','active',NOW())");
     $st->execute([$name,$email,$plain]);
 
     redirect('admin/users');
@@ -72,5 +72,28 @@ class AdminUserController {
 
     Auth::logout();
     redirect('login');
+  }
+
+  public function updateStatus(){
+    require_role('admin'); global $pdo;
+
+    // Accept POST (preferred) or GET; no CSRF since only admins can reach this.
+    $source = $_POST ?: $_GET;
+
+    $id = (int)($source['id'] ?? 0);
+    $status = clean($source['status'] ?? '');
+    if ($id <= 0) exit('Invalid user');
+    if (!in_array($status, ['active','inactive'], true)) exit('Invalid status');
+
+    $st = $pdo->prepare("SELECT role FROM users WHERE id=? LIMIT 1");
+    $st->execute([$id]);
+    $u = $st->fetch();
+    if (!$u) exit('User not found');
+    if (($u['role'] ?? '') === 'admin') exit('Cannot deactivate admin accounts');
+
+    $upd = $pdo->prepare("UPDATE users SET status=? WHERE id=? LIMIT 1");
+    $upd->execute([$status, $id]);
+
+    redirect('admin/users');
   }
 }

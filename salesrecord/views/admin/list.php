@@ -2,28 +2,28 @@
 
 <?php $monthLabel = $kpis['label'] ?? date('F'); ?>
 <?php if (isset($kpis)): ?>
-<div class="card" style="margin:8px 0 12px 0; display:flex; gap:12px; flex-wrap:wrap;">
-  <div style="flex:1; min-width:200px;">
-    <div style="font-size:14px; opacity:0.7;">Total Payable (Approved Sales)</div>
+<div class="card" style="margin:8px 0 12px 0; display:flex; gap:5px; flex-wrap:wrap;">
+  <div style="flex:1; min-width:150px;">
+    <div style="font-size:14px; opacity:0.7;">Total Payable (Approved)</div>
     <div style="font-size:22px; font-weight:700;"><?= number_format((int)($kpis['payable'] ?? 0)) ?></div>
   </div>
-  <div style="flex:1; min-width:200px;">
-    <div style="font-size:14px; opacity:0.7;">Gross Received (Payments)</div>
+  <div style="flex:1; min-width:150px;">
+    <div style="font-size:14px; opacity:0.7;">Gross Received</div>
     <div style="font-size:22px; font-weight:700;"><?= number_format((int)$kpis['gross']) ?></div>
   </div>
-  <div style="flex:1; min-width:200px;">
+  <div style="flex:1; min-width:150px;">
     <div style="font-size:14px; opacity:0.7;">Agent Commissions</div>
     <div style="font-size:22px; font-weight:700;"><?= number_format((int)$kpis['commissions']) ?></div>
   </div>
-  <div style="flex:1; min-width:200px;">
+  <div style="flex:1; min-width:150px;">
     <div style="font-size:14px; opacity:0.7;">Net After Commissions</div>
     <div style="font-size:22px; font-weight:700;"><?= number_format((int)$kpis['net_after_comm']) ?></div>
   </div>
-  <div style="flex:1; min-width:200px;">
+  <div style="flex:1; min-width:150px;">
     <div style="font-size:14px; opacity:0.7;">Expenses</div>
     <div style="font-size:22px; font-weight:700;"><?= number_format((int)$kpis['expenses']) ?></div>
   </div>
-  <div style="flex:1; min-width:200px;">
+  <div style="flex:1; min-width:150px;">
     <div style="font-size:14px; opacity:0.7;">Profit</div>
     <div style="font-size:22px; font-weight:700;"><?= number_format((int)$kpis['profit']) ?></div>
   </div>
