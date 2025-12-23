@@ -21,7 +21,7 @@ ob_start();
 
   <form id="saleForm" method="post" action="<?= $formActionAttr ?>" enctype="multipart/form-data" autocomplete="off">
     <input type="hidden" name="csrf" value="<?= csrf_token() ?>">
-    <input type="hidden" name="old_mode" id="old_mode" value=""><!-- 'due' | 'renewal' after Fetch -->
+    <input type="hidden" name="old_mode" id="old_mode" value="<?= $isEditing && $selectedType === 'old' ? 'renewal' : '' ?>"><!-- 'due' | 'renewal' after Fetch -->
     <?php if ($isEditing): ?>
       <input type="hidden" name="sale_id" value="<?= (int)$sale['id'] ?>">
     <?php endif; ?>
@@ -236,6 +236,7 @@ ob_start();
 
   const form       = $('saleForm');
   const isEditing  = <?= $isEditing ? 'true' : 'false' ?>;
+  const prevPriceFromEdit = <?= json_encode((int)($sale['amount_to_be_paid'] ?? 0)) ?>;
   const typeEl     = $('customer_type');
   const schoolEl   = $('school_name');
   const phoneEl    = $('phone');
@@ -432,13 +433,22 @@ ob_start();
 
   // Toggle mode inline on type change (no full reload)
   typeEl.addEventListener('change', ()=>{
-    $('old_mode').value = '';
+    $('old_mode').value = (isEditing && typeEl.value === 'old') ? 'renewal' : '';
     if (typeEl.value === 'old') {
-      setOldPreFetch();
-      // Clear due-only inputs to force fresh fetch
-      if ($('due_only_payable')) $('due_only_payable').value = '';
-      if ($('due_only_paid'))    $('due_only_paid').value    = '';
-      if ($('due_only_next'))    $('due_only_next').value    = '';
+      if (isEditing) {
+        setOldRenewalMode(prevPriceFromEdit);
+        if (btnFetch) {
+          btnFetch.disabled = true;
+          btnFetch.title = 'Fetch not required when editing an existing old customer';
+        }
+        if (helpEl) helpEl.textContent = 'Editing existing old-customer sale; fetch not required.';
+      } else {
+        setOldPreFetch();
+        // Clear due-only inputs to force fresh fetch
+        if ($('due_only_payable')) $('due_only_payable').value = '';
+        if ($('due_only_paid'))    $('due_only_paid').value    = '';
+        if ($('due_only_next'))    $('due_only_next').value    = '';
+      }
     } else {
       setNewMode();
     }
@@ -494,7 +504,18 @@ ob_start();
   // Init on load
   (function initOnLoad(){
     const isOld = (typeEl.value === 'old');
-    if (isOld) setOldPreFetch(); else setNewMode();
+    if (isOld && isEditing) {
+      setOldRenewalMode(prevPriceFromEdit);
+      if (btnFetch) {
+        btnFetch.disabled = true;
+        btnFetch.title = 'Fetch not required when editing an existing old customer';
+      }
+      if (helpEl) helpEl.textContent = 'Editing existing old-customer sale; fetch not required.';
+    } else if (isOld) {
+      setOldPreFetch();
+    } else {
+      setNewMode();
+    }
   })();
 
   // Guard: Old must fetch first
