@@ -128,7 +128,7 @@ ob_start();
         </div>
         <div>
           <label>Sale Source</label>
-          <select name="sale_source">
+          <select name="sale_source" id="sale_source">
             <option value="Ad boost" <?= $selectedSaleSource==='Ad boost'?'selected':'' ?>>Ad Boost</option>
             <option value="Referral" <?= $selectedSaleSource==='Referral'?'selected':'' ?>>Referral</option>
             <option value="Old Customer" <?= $selectedSaleSource==='Old Customer'?'selected':'' ?>>Old Customer</option>
@@ -240,6 +240,7 @@ ob_start();
   const typeEl     = $('customer_type');
   const schoolEl   = $('school_name');
   const phoneEl    = $('phone');
+  const saleSourceEl = document.getElementById('sale_source');
   const btnFetch   = $('btnFetch');
 
   const sectionMain    = $('sectionMain');
@@ -296,6 +297,22 @@ ob_start();
     }
   }
 
+  function applyCommissionRules(){
+    const allowOldCommission = (typeEl.value === 'old' && saleSourceEl && saleSourceEl.value === 'Add classes');
+    if (typeEl.value === 'old') {
+      if (allowOldCommission) {
+        setCommissionVisible(true);
+        setCommissionLocked(false);
+      } else {
+        setCommissionVisible(false);
+        setCommissionLocked(true);
+      }
+    } else {
+      setCommissionVisible(true);
+      setCommissionLocked(false);
+    }
+  }
+
   commissionVis.addEventListener('input', ()=>{
     commissionHid.value = commissionVis.value || '0';
   });
@@ -327,8 +344,7 @@ ob_start();
     setEnabled(sectionMain, true);
     setEnabled(sectionDueOnly, false);
 
-    setCommissionVisible(true);
-    setCommissionLocked(false);
+    applyCommissionRules();
 
     $('old_mode').value = '';
     lastPriceRow.style.display = 'none';
@@ -353,8 +369,7 @@ ob_start();
     setEnabled(sectionMain, true);
     setEnabled(sectionDueOnly, false);
 
-    setCommissionVisible(false);
-    setCommissionLocked(true);
+    applyCommissionRules();
 
     $('old_mode').value = '';
     lastPriceRow.style.display = 'none';
@@ -417,8 +432,7 @@ ob_start();
     lastPriceRow.style.display = '';
     lastPrice.value = String(prevPrice || 0);
 
-    setCommissionVisible(false);
-    setCommissionLocked(true);
+    applyCommissionRules();
 
     schoolEl.required = true;   // renewal needs school
     phoneEl.required  = false;
@@ -453,6 +467,12 @@ ob_start();
       setNewMode();
     }
   });
+
+  if (saleSourceEl) {
+    saleSourceEl.addEventListener('change', ()=>{
+      applyCommissionRules();
+    });
+  }
 
   // Fetch for Old (STRICT: requires school + 11-digit phone)
   btnFetch.addEventListener('click', async ()=>{

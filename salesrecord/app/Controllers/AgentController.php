@@ -259,6 +259,7 @@ public function dashboard(){
     $payment_method    = clean($_POST['payment_method'] ?? ($current['payment_method'] ?? 'cash'));
     $agent_note        = clean($_POST['agent_note'] ?? '');
     $agent_name        = user()['name'];
+    $allowOldCommission = ($customer_type === 'old' && $sale_source === 'Add classes');
 
     if (!in_array($customer_type, ['new','old'], true)) exit('Invalid customer type');
 
@@ -280,7 +281,9 @@ public function dashboard(){
       if ($existing_due > 0) {
         exit('Outstanding due exists. Record a payment against due instead of renewal.');
       }
-      $commission_amount = 0;
+      if (!$allowOldCommission) {
+        $commission_amount = 0;
+      }
       if ($module_name==='') exit('Module is required for renewal');
       if (!preg_match($datePattern, $pkg_start) || !preg_match($datePattern, $pkg_end)) exit('Dates must be YYYY-MM-DD');
       if ($amount_to_pay <= 0) exit('Payable must be greater than 0 for renewal');
@@ -570,6 +573,8 @@ $package_duration  = clean($_POST['package_duration'] ?? '');
     $agent_user_id     = user()['id'];
     if (mb_strlen($agent_note) > 250) exit('Note too long (max 250 characters)');
 
+    $allowOldCommission = ($customer_type === 'old' && $sale_source === 'Add classes');
+
     if (!in_array($customer_type, ['new','old'], true)) exit('Invalid customer type');
 
     $datePattern = '/^\d{4}-\d{2}-\d{2}$/';
@@ -666,8 +671,10 @@ $package_duration  = clean($_POST['package_duration'] ?? '');
         exit('Outstanding due exists. Record a payment against due instead of renewal.');
       }
 
-      // Hard lock commission to zero for OLD customers
-      $commission_amount = 0;
+      if (!$allowOldCommission) {
+        // Hard lock commission to zero for OLD customers except Add classes
+        $commission_amount = 0;
+      }
 
       if ($module_name==='') exit('Module is required for renewal');
       if (!preg_match($datePattern, $pkg_start) || !preg_match($datePattern, $pkg_end)) exit('Dates must be YYYY-MM-DD');
@@ -694,7 +701,7 @@ $package_duration  = clean($_POST['package_duration'] ?? '');
     }
 
     // Final guard just before INSERT (defensive)
-    if ($isOld) {
+    if ($isOld && !$allowOldCommission) {
       $commission_amount = 0;
     }
 
